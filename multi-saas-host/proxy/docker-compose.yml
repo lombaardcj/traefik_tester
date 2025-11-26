@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   traefik:
     image: traefik:v2.11
@@ -33,4 +31,5 @@ services:
 
 networks:
   traefik_proxy:
-    driver: bridge
+    external: true
+    name: traefik_proxy

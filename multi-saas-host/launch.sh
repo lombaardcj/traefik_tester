@@ -15,9 +15,10 @@ PROXY_DIR="$ROOT_DIR/proxy"
 
 cmd=${1:-}
 target=${2:-}
+mode=${3:-}
 
 function usage() {
-  echo "Usage: $0 <up|down|restart|logs|proxy-up|proxy-down|proxy-logs> <customer-name>"
+  echo "Usage: $0 <up|down|restart|logs|proxy-up|proxy-down|proxy-logs> <customer-name> [--dev]"
   exit 1
 }
 
@@ -37,7 +38,7 @@ function run_proxy() {
       # Ensure acme.json permissions are 644 per Traefik requirements
       mkdir -p letsencrypt
       touch letsencrypt/acme.json
-      chmod 644 letsencrypt/acme.json || true
+      chmod 600 letsencrypt/acme.json || true
       docker compose up -d
       ;;
     down)
@@ -66,17 +67,34 @@ function run_site() {
   pushd "$dir" >/dev/null
   case "$cmd" in
     up)
-      docker compose --env-file .env up -d
+      if [[ "$mode" == "--dev" ]]; then
+        docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env up -d
+      else
+        docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env up -d
+      fi
       ;;
     down)
-      docker compose --env-file .env down
+      if [[ "$mode" == "--dev" ]]; then
+        docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env down
+      else
+        docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env down
+      fi
       ;;
     restart)
-      docker compose --env-file .env down
-      docker compose --env-file .env up -d
+      if [[ "$mode" == "--dev" ]]; then
+        docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env down
+        docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env up -d
+      else
+        docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env down
+        docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env up -d
+      fi
       ;;
     logs)
-      docker compose --env-file .env logs -f
+      if [[ "$mode" == "--dev" ]]; then
+        docker compose -f docker-compose.yml -f docker-compose.dev.yml --env-file .env logs -f
+      else
+        docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env logs -f
+      fi
       ;;
     *) usage ;;
   esac
@@ -95,8 +113,12 @@ case "$cmd" in
   proxy-logs)
     run_proxy logs
     ;;
-  up|down|restart|logs)
+    up|down|restart|logs)
     [[ -n "$target" ]] || usage
+    # Default to prod (HTTPS) unless --dev specified; include prod override
+    if [[ -z "$mode" ]]; then
+      mode="--prod"
+    fi
     run_site "$target"
     ;;
   *)

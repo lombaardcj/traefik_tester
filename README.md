@@ -16,14 +16,24 @@ Structure created under `multi-saas-host/`:
 ```bash
 cd multi-saas-host
 chmod +x launch.sh add-customer.sh
-chmod 644 proxy/letsencrypt/acme.json
+chmod 600 proxy/letsencrypt/acme.json
 ./launch.sh proxy-up
 ```
 
-2. Bring up an example customer:
+2. Bring up example customers (choose dev or prod):
+
+Dev (HTTP-only, for local testing via /etc/hosts):
+
+```bash
+./launch.sh up customer-a --dev
+./launch.sh up customer-b --dev
+```
+
+Prod (HTTPS with Let’s Encrypt):
 
 ```bash
 ./launch.sh up customer-a
+./launch.sh up customer-b
 ```
 
 3. Add a new customer:
@@ -39,6 +49,59 @@ chmod 644 proxy/letsencrypt/acme.json
 - Sites attach to external network `traefik_proxy` shared with the proxy.
 - Leave `HOST_PORT_HTTPS` empty to avoid host port binding; Traefik handles routing.
 - Ensure DNS points `DOMAIN` to the server running Traefik.
+
+### Local Dev (HTTP-only)
+
+- Map dev domains in `/etc/hosts`:
+
+```bash
+sudo sh -c 'echo "127.0.0.1 customer-a.example.com" >> /etc/hosts'
+sudo sh -c 'echo "127.0.0.1 customer-b.example.com" >> /etc/hosts'
+```
+
+- Start customers using the dev override (no TLS/LE):
+
+```bash
+cd multi-saas-host
+./launch.sh up customer-a --dev
+./launch.sh up customer-b --dev
+```
+
+- Visit `http://customer-a.example.com` and `http://customer-b.example.com`.
+
+To return to HTTPS with Let’s Encrypt, omit `--dev`:
+
+```bash
+./launch.sh restart customer-a
+```
+
+### Shutdown and Cleanup
+
+- Stop proxy:
+
+```bash
+cd multi-saas-host
+./launch.sh proxy-down
+```
+
+- Stop sites (dev or prod):
+
+```bash
+# Dev stacks
+./launch.sh down customer-a --dev
+./launch.sh down customer-b --dev
+
+# Prod stacks
+./launch.sh down customer-a
+./launch.sh down customer-b
+```
+
+- Remove orphan containers if needed:
+
+```bash
+docker compose ls
+docker ps --format '{{.Names}} {{.Status}}'
+```
 
 # traefik_tester
 Test multi customer hosting from vanilla docker compose and traefik

@@ -24,6 +24,8 @@ fi
 
 mkdir -p "$dest/certs"
 cp "$TEMPLATE_DIR/docker-compose.yml" "$dest/docker-compose.yml"
+cp "$TEMPLATE_DIR/docker-compose.dev.yml" "$dest/docker-compose.dev.yml"
+cp "$TEMPLATE_DIR/docker-compose.prod.yml" "$dest/docker-compose.prod.yml"
 mkdir -p "$dest/node"
 cp "$TEMPLATE_DIR/node/Dockerfile" "$dest/node/Dockerfile"
 cp "$TEMPLATE_DIR/node/app.js" "$dest/node/app.js"
@@ -36,4 +38,5 @@ EOF
 
 echo "Customer '$name' created at $dest"
 echo "Edit $dest/.env if needed, then run:"
-echo "  $ROOT_DIR/launch.sh up $name"
+echo "  $ROOT_DIR/launch.sh up $name" 
+echo "  # for local dev (HTTP only): $ROOT_DIR/launch.sh up $name --dev"
