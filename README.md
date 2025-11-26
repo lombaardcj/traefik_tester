@@ -19,6 +19,11 @@ chmod +x launch.sh add-customer.sh
 chmod 600 proxy/letsencrypt/acme.json
 ./launch.sh proxy-up
 ```
+### Traefik Dashboard (Dev)
+
+- The proxy exposes the dashboard at `http://localhost:8080` with `--api.insecure=true` and `--api.dashboard=true`.
+- Use this to inspect routers, services, and middlewares during local development.
+
 
 2. Bring up example customers (choose dev or prod):
 
