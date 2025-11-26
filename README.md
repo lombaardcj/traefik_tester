@@ -24,6 +24,15 @@ chmod 600 proxy/letsencrypt/acme.json
 - The proxy exposes the dashboard at `http://localhost:8080` with `--api.insecure=true` and `--api.dashboard=true`.
 - Use this to inspect routers, services, and middlewares during local development.
 
+### Metrics (Prometheus)
+
+- Prometheus metrics are exposed by Traefik on `http://localhost:8089/metrics`.
+- Flags enabled:
+	- `--metrics.prometheus=true`
+	- `--metrics.prometheus.entrypoint=metrics`
+	- `--entrypoints.metrics.address=:8089`
+- Point your Prometheus scrape config to `localhost:8089` and visualize in Grafana.
+
 
 2. Bring up example customers (choose dev or prod):
 
